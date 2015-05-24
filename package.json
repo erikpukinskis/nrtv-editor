@@ -1,0 +1,18 @@
+{
+  "name": "nrtv-editor",
+  "version": "0.9.0",
+  "description": "Generate HTML",
+  "main": "editor.js",
+  "dependencies": {
+    "amdefine": "*"
+  },
+  "devDependencies": {
+    "chai": "*"
+  },
+  "license": "ISC",
+  "homepage": "https://github.com/erikpukinskis/nrtv-editor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erikpukinskis/nrtv-editor.git"
+  }
+}
