@@ -3,7 +3,7 @@ if (typeof define !== 'function') {
     module)}
 
 define(
-  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie", "nrtv-element-tie", "nrtv-database-tie"],
+  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie"],
   function(component, element, BridgeTie, ServerTie, ElementTie, DatabaseTie) {
 
     var Editor = component(BridgeTie, ServerTie, ElementTie)
@@ -12,10 +12,10 @@ define(
 
     var bridge = Editor.bridge(server)
 
-    var narrativeLink = element(
-      "a",
+    var narrativeLink = element.template(
+      "a.link-to-narrative",
       element.styles({
-        "margin-left:" "16px",
+        "margin-left": "16px",
         "font-family": "Helvetica",
         "padding": "10px 0",
         "display": "inline-block",
@@ -23,21 +23,23 @@ define(
       })
     )
 
-    var bodyText = element(
+    var bodyText = element.template(
+      ".body-text",
       element.style({
 
         // Cuz max-width is in ems:
 
         "font-size": "14pt",
-        "line-height": "1.5em"
+        "line-height": "1.5em",
         "@media (max-width: 600px)": {
           "font-size": "10.5pt"
         }
       })
     )
 
-    var textarea = bodyText(
-      "textarea",
+    var textarea = element.template(
+      bodyText,
+      "textarea.source",
       {rows: "600"},
       element.style({
         "background": "none",
@@ -53,52 +55,52 @@ define(
       })
     )
 
-    var centerColumn = bodyText(
+    var centerColumn = element.template(
+      bodyText,
       ".center-column",
       [
         narrativeLink(
           {href: "/component"},
           "Component"
         ),
-        textArea
+        textArea("turtle!")
       ],
       element.styles({
-        "width:" "100%"
-        "max-width:" "600px"
+        "width": "100%",
+        "max-width": "600px",
         "margin": "0 auto"
       })
     )
 
-    var body = Editor.element("body",
+    var body = element.template("body",
+      element.style({
+        "margin": "0",
+        "-webkit-font-smoothing":
+          "antialiased"
+      }),
       [
         element("meta", {
           name: "viewport",
           content: "width=device-width, initial-scale=1.0, user-scalable=no"
         }),
-        element.yield()
-      ],
-      editor.style({
-        "margin": "0",
-        "-webkit-font-smoothing":
-          "antialiased"
-      })
+        element.container()
+      ]
     )
-
-    var page = body(centerColumn(sourceEl)).render()
-
-    var db = bridge.database()
 
     server.route(
       "get",
       "/:name",
       function(request, response) {
 
-        var source = get(
-          request.params.name
-        )
-        var sourceEl = textarea(source)
+        var source = "turtle!"
+        var page = body([
+          narrativeLink({
+            href: "/component"
+          }),
+          textarea(source)
+        ])
 
-        bridge.sendPage(page.html, page.styles)
+        bridge.sendPage(page.html(), page.stylesheet)
       }
     )
 

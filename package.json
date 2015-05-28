@@ -4,10 +4,15 @@
   "description": "Generate HTML",
   "main": "editor.js",
   "dependencies": {
-    "amdefine": "*"
+    "amdefine": "*",
+    "nrtv-component": "*",
+    "nrtv-element": "*",
+    "nrtv-bridge-tie": "*",
+    "nrtv-server-tie": "*"
   },
   "devDependencies": {
-    "chai": "*"
+    "chai": "*",
+    "requirejs": "*"
   },
   "license": "ISC",
   "homepage": "https://github.com/erikpukinskis/nrtv-editor",
