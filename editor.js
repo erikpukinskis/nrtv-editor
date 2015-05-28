@@ -12,17 +12,10 @@ define(
 
     var bridge = Editor.bridge(server)
 
-<<<<<<< HEAD
     var narrativeLink = element.template(
       "a.link-to-narrative",
-      element.styles({
-        "margin-left": "16px",
-=======
-    var narrativeLink = element(
-      "a",
       element.style({
-        "margin-left:" "16px",
->>>>>>> Fix template calling style
+        "margin-left:": "16px",
         "font-family": "Helvetica",
         "padding": "10px 0",
         "display": "inline-block",
@@ -70,19 +63,11 @@ define(
           {href: "/component"},
           "Component"
         ),
-<<<<<<< HEAD
-        textArea("turtle!")
-      ],
-      element.styles({
-        "width": "100%",
-        "max-width": "600px",
-=======
         element.yield
       ],
       element.style({
-        "width:" "100%"
-        "max-width:" "600px"
->>>>>>> Fix template calling style
+        "width": "100%",
+        "max-width": "600px",
         "margin": "0 auto"
       })
     )
@@ -98,12 +83,6 @@ define(
           name: "viewport",
           content: "width=device-width, initial-scale=1.0, user-scalable=no"
         }),
-<<<<<<< HEAD
-        element.container()
-      ]
-    )
-
-=======
         element.yield
       ],
       element.style({
@@ -115,33 +94,32 @@ define(
 
     // var db = bridge.database()
 
->>>>>>> Fix template calling style
     server.route(
       "get",
       "/:name",
       function(request, response) {
 
-<<<<<<< HEAD
         var source = "turtle!"
+
+        var style = element.stylesheet(
+          body,
+          centerColumn,
+          textarea,
+          bodyText,
+          narrativeLink
+        )
+
         var page = body([
-          narrativeLink({
-            href: "/component"
-          }),
-          textarea(source)
+          style,
+          centerColumn([
+            narrativeLink({
+              href: "/component"
+            }),
+            textarea(source)
+          ])
         ])
 
-        bridge.sendPage(page.html(), page.stylesheet)
-=======
-        // var source = get(
-        //   request.params.name
-        // )
-
-        var sourceEl = textarea(source)
-
-        var page = body(centerColumn(sourceEl)).render()
-
-        bridge.sendPage(page.html, page.styles)
->>>>>>> Fix template calling style
+        bridge.sendPage(page)
       }
     )
 

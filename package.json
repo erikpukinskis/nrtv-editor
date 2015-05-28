@@ -10,6 +10,9 @@
     "nrtv-bridge-tie": "*",
     "nrtv-server-tie": "*"
   },
+  "scripts": {
+    "test": "node test.js"
+  },
   "devDependencies": {
     "chai": "*",
     "requirejs": "*"
