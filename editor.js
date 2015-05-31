@@ -3,8 +3,8 @@ if (typeof define !== 'function') {
     module)}
 
 define(
-  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie"],
-  function(component, element, BridgeTie, ServerTie, ElementTie, DatabaseTie) {
+  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie", "nrtv-element-tie", "html"],
+  function(component, element, BridgeTie, ServerTie, ElementTie, html) {
 
     var Editor = component(BridgeTie, ServerTie, ElementTie)
 
@@ -12,18 +12,23 @@ define(
 
     var bridge = Editor.bridge(server)
 
-    var narrativeLink = element.template(
+    var NarrativeLink = element.template(
       "a.link-to-narrative",
       element.style({
         "margin-left:": "16px",
         "font-family": "Helvetica",
         "padding": "10px 0",
         "display": "inline-block",
-        "opacity": "0.4"
-      })
+        "opacity": "0.4",
+        "text-transform": "capitalize"
+      }),
+      function(name) {
+        this.innerHTML = name
+        this.attributes.href = "/"+name
+      }
     )
 
-    var bodyText = element.template(
+    var BodyText = element.template(
       ".body-text",
       element.style({
 
@@ -34,11 +39,12 @@ define(
         "@media (max-width: 600px)": {
           "font-size": "10.5pt"
         }
-      })
+      }),
+      element.containerGenerator
     )
 
-    var textarea = element.template(
-      bodyText,
+    var Code = element.template(
+      BodyText,
       "textarea.source",
       {rows: "600"},
       element.style({
@@ -52,44 +58,52 @@ define(
         "box-sizing": "border-box",
         "font-family": "Courier",
         "color": "#2D3F6E"
-      })
+      }),
+      function(source) {
+        this.children.push(element.raw(source))
+      }
     )
 
-    var centerColumn = element.template(
-      bodyText,
-      ".center-column",
-      [
-        narrativeLink(
-          {href: "/component"},
-          "Component"
-        ),
-        element.yield
-      ],
-      element.style({
-        "width": "100%",
-        "max-width": "600px",
-        "margin": "0 auto"
-      })
-    )
+    var CenterColumn = 
+      element.template(
+        BodyText,
+        ".center-column",
+        element.style({
+          "width": "100%",
+          "max-width": "600px",
+          "margin": "0 auto"
+        }),
+        element.containerGenerator
+      )
 
-    var body = element.template("body",
+    var Page = element.template(
+      "body.page",
+      element("meta", {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1.0, user-scalable=no"
+      }),
       element.style({
         "margin": "0",
         "-webkit-font-smoothing":
           "antialiased"
       }),
-      [
-        element("meta", {
-          name: "viewport",
-          content: "width=device-width, initial-scale=1.0, user-scalable=no"
-        }),
-        element.yield
-      ],
-      element.style({
-        "margin": "0",
-        "-webkit-font-smoothing":
-          "antialiased"
-      })
+      function(source) {
+        var el = CenterColumn(
+          NarrativeLink("component"),
+          Code(source)
+        )
+
+        var style = element.stylesheet(
+          Page,
+          CenterColumn,
+          Code,
+          BodyText,
+          NarrativeLink
+        )
+
+        this.children.push(style)
+        this.children.push(el)
+      }
     )
 
     // var db = bridge.database()
@@ -98,28 +112,9 @@ define(
       "get",
       "/:name",
       function(request, response) {
-
         var source = "turtle!"
 
-        var style = element.stylesheet(
-          body,
-          centerColumn,
-          textarea,
-          bodyText,
-          narrativeLink
-        )
-
-        var page = body([
-          style,
-          centerColumn([
-            narrativeLink({
-              href: "/component"
-            }),
-            textarea(source)
-          ])
-        ])
-
-        bridge.sendPage(page)
+        bridge.sendPage(Page(source))(request, response)
       }
     )
 

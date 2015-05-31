@@ -1,14 +1,16 @@
 {
   "name": "nrtv-editor",
-  "version": "0.9.0",
-  "description": "Generate HTML",
+  "version": "0.1.0",
+  "description": "Edit code",
   "main": "editor.js",
   "dependencies": {
     "amdefine": "*",
     "nrtv-component": "*",
     "nrtv-element": "*",
     "nrtv-bridge-tie": "*",
-    "nrtv-server-tie": "*"
+    "nrtv-server-tie": "*",
+    "nrtv-element-tie": "*",
+    "html": "*"
   },
   "scripts": {
     "test": "node test.js"
