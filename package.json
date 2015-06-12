@@ -10,7 +10,8 @@
     "nrtv-bridge-tie": "*",
     "nrtv-server-tie": "*",
     "nrtv-element-tie": "*",
-    "html": "*"
+    "nrtv-database-tie": "*",
+    "nano": "*"
   },
   "scripts": {
     "test": "node test.js"

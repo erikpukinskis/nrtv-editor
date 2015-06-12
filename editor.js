@@ -3,14 +3,17 @@ if (typeof define !== 'function') {
     module)}
 
 define(
-  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie", "nrtv-element-tie", "html"],
-  function(component, element, BridgeTie, ServerTie, ElementTie, html) {
+  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie", "nrtv-element-tie", "nrtv-database-tie"],
+  function(component, element, BridgeTie, ServerTie, ElementTie, DatabaseTie) {
 
-    var Editor = component(BridgeTie, ServerTie, ElementTie)
+    console.log("db-tie", DatabaseTie)
+    var Editor = component(BridgeTie, ServerTie, ElementTie, DatabaseTie)
 
     var server = Editor.server()
 
     var bridge = Editor.bridge(server)
+
+    var narratives = Editor.database("narratives")
 
     var NarrativeLink = element.template(
       "a.link-to-narrative",
@@ -106,15 +109,16 @@ define(
       }
     )
 
-    // var db = bridge.database()
-
     server.route(
       "get",
       "/:name",
       function(request, response) {
-        var source = "turtle!"
-
-        bridge.sendPage(Page(source))(request, response)
+        var source = narratives.get(request.params.name,
+          function(narrative) {
+            var handler = bridge.sendPage(Page(source))
+            handler(request, response)
+          }
+        )
       }
     )
 
