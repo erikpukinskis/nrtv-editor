@@ -2,20 +2,39 @@ if (typeof define !== 'function') {
   var define = require('amdefine')(
     module)}
 
+
+
 define(
-  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie", "nrtv-element-tie", "nrtv-database-tie"],
-  function(component, element, BridgeTie, ServerTie, ElementTie, DatabaseTie) {
+  "body-text",
+  ["nrtv-element"],
+  function(element) {
+    console.log("element.template", element.template)
+    console.log("element.template.container", element.template.container)
+    return element.template.container(
+      ".body-text",
+      element.style({
 
-    console.log("db-tie", DatabaseTie)
-    var Editor = component(BridgeTie, ServerTie, ElementTie, DatabaseTie)
+        // Cuz max-width is in ems, we need both the textarea and the center column to have the same metrics
 
-    var server = Editor.server()
+        "font-size": "14pt",
+        "line-height": "1.5em",
+        "@media (max-width: 600px)": {
+          "font-size": "10.5pt"
+        }
+      })
+    )
 
-    var bridge = Editor.bridge(server)
+  }
+)
 
-    var narratives = Editor.database("narratives")
 
-    var NarrativeLink = element.template(
+
+define(
+  "narrative-link",
+  ["nrtv-element"],
+  function(element) {
+
+    return element.template(
       "a.link-to-narrative",
       element.style({
         "margin-left:": "16px",
@@ -31,22 +50,15 @@ define(
       }
     )
 
-    var BodyText = 
-      element.template.container(
-        ".body-text",
-        element.style({
+  }
+)
 
-          // Cuz max-width is in ems, we need both the textarea and the center column to have the same metrics
+define(
+  "code",
+  ["nrtv-element", "body-text"],
+  function(element, BodyText) {
 
-          "font-size": "14pt",
-          "line-height": "1.5em",
-          "@media (max-width: 600px)": {
-            "font-size": "10.5pt"
-          }
-        })
-      )
-
-    var Code = element.template(
+    return element.template(
       BodyText,
       "textarea.source",
       {rows: "600"},
@@ -67,16 +79,35 @@ define(
       }
     )
 
-    var CenterColumn = 
-      element.template.container(
-        BodyText,
-        ".center-column",
-        element.style({
-          "width": "100%",
-          "max-width": "600px",
-          "margin": "0 auto"
-        })
-      )
+  }
+)
+
+
+
+define(
+  "center-column",
+  ["nrtv-element", "body-text"],
+  function(element, BodyText) {
+
+    return element.template.container(
+      BodyText,
+      ".center-column",
+      element.style({
+        "width": "100%",
+        "max-width": "600px",
+        "margin": "0 auto"
+      })
+    )
+
+  }
+)
+
+
+
+define(
+  "editor-page",
+  ["nrtv-element", "center-column", "code", "narrative-link", "body-text"],
+  function(element, CenterColumn, Code, NarrativeLink, BodyText) {
 
     var Page = element.template(
       "body.page",
@@ -108,13 +139,35 @@ define(
       }
     )
 
+    return Page
+
+  }
+)
+
+
+
+define(
+  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie", "nrtv-element-tie", "nrtv-database-tie", "editor-page"],
+  function(component, element, BridgeTie, ServerTie, ElementTie, DatabaseTie, Page) {
+
+    var Editor = component(BridgeTie, ServerTie, ElementTie, DatabaseTie)
+
+    var server = Editor.server()
+
+    var bridge = Editor.bridge(server)
+
+    var narratives = Editor.database("narratives")
+
     server.route(
       "get",
       "/:name",
       function(request, response) {
         var source = narratives.get(request.params.name,
-          function(narrative) {
-            var handler = bridge.sendPage(Page(source))
+          function(err, narrative) {
+            if (err) {
+              narrative = {source: ""}
+            }
+            var handler = bridge.sendPage(Page(narrative.source))
             handler(request, response)
           }
         )
