@@ -31,20 +31,20 @@ define(
       }
     )
 
-    var BodyText = element.template(
-      ".body-text",
-      element.style({
+    var BodyText = 
+      element.template.container(
+        ".body-text",
+        element.style({
 
-        // Cuz max-width is in ems, we need both the textarea and the center column to have the same metrics
+          // Cuz max-width is in ems, we need both the textarea and the center column to have the same metrics
 
-        "font-size": "14pt",
-        "line-height": "1.5em",
-        "@media (max-width: 600px)": {
-          "font-size": "10.5pt"
-        }
-      }),
-      element.containerGenerator
-    )
+          "font-size": "14pt",
+          "line-height": "1.5em",
+          "@media (max-width: 600px)": {
+            "font-size": "10.5pt"
+          }
+        })
+      )
 
     var Code = element.template(
       BodyText,
@@ -68,15 +68,14 @@ define(
     )
 
     var CenterColumn = 
-      element.template(
+      element.template.container(
         BodyText,
         ".center-column",
         element.style({
           "width": "100%",
           "max-width": "600px",
           "margin": "0 auto"
-        }),
-        element.containerGenerator
+        })
       )
 
     var Page = element.template(
