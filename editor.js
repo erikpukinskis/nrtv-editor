@@ -8,8 +8,7 @@ define(
   "body-text",
   ["nrtv-element"],
   function(element) {
-    console.log("element.template", element.template)
-    console.log("element.template.container", element.template.container)
+
     return element.template.container(
       ".body-text",
       element.style({
@@ -53,6 +52,77 @@ define(
   }
 )
 
+
+
+define(
+  "center-column",
+  ["nrtv-element", "body-text"],
+  function(element, BodyText) {
+
+    return element.template.container(
+      BodyText,
+      ".center-column",
+      element.style({
+        "width": "100%",
+        "max-width": "600px",
+        "margin": "0 auto"
+      })
+    )
+
+  }
+)
+
+define(
+  "save-button",
+  ["nrtv-component", "nrtv-element", "nrtv-server-tie", "nrtv-bridge-tie", "nrtv-database-tie", "nrtv-element-tie"],
+  function(component, element, ServerTie, BridgeTie, DatabaseTie, ElementTie) {
+
+    var SaveButton = component(ServerTie, BridgeTie, DatabaseTie, ElementTie, function(getCode) {
+        // this func won't really be available until way late, when we are instantiated.
+      }
+    )
+
+    var server = SaveButton.server()
+    var bridge = SaveButton.bridge()
+
+    var successMessage = SaveButton.element(".success.hidden", "Saved!")
+
+    var showSuccess = successMessage.showOnClient(bridge)
+    console.log()
+    var saveRoute = server.route(
+      "post", 
+      "/:name",
+      function(request, response) {
+        console.log("this is where we save")
+        response.json(showSuccess)
+      }
+    )
+
+    function getCode() {
+      return $("textarea").html()
+    }
+
+    var Actuator = element.template(
+      'button',
+      {
+        onclick: saveRoute.makeRequest(bridge)
+
+
+
+
+        //   save.across(bridge).withArgs()
+        //   save.makeRequest(bridge, WE NEED A REF HERE TO THE DATAS)
+      },
+      "Save"
+    )
+
+    return SaveButton
+  }
+
+)
+
+
+
 define(
   "code",
   ["nrtv-element", "body-text"],
@@ -76,6 +146,12 @@ define(
       }),
       function(source) {
         this.children.push(element.raw(source))
+        this.client = {
+          save: function(bridge) {
+            bridge.bindOnClient
+            return ""
+          }
+        }
       }
     )
 
@@ -84,30 +160,14 @@ define(
 
 
 
-define(
-  "center-column",
-  ["nrtv-element", "body-text"],
-  function(element, BodyText) {
-
-    return element.template.container(
-      BodyText,
-      ".center-column",
-      element.style({
-        "width": "100%",
-        "max-width": "600px",
-        "margin": "0 auto"
-      })
-    )
-
-  }
-)
-
 
 
 define(
   "editor-page",
-  ["nrtv-element", "center-column", "code", "narrative-link", "body-text"],
-  function(element, CenterColumn, Code, NarrativeLink, BodyText) {
+  ["nrtv-element", "center-column", "code", "narrative-link", "body-text", "save-button"],
+  function(element, CenterColumn, Code, NarrativeLink, BodyText, SaveButton) {
+
+    var code = Code("doogie howser")
 
     var Page = element.template(
       "body.page",
@@ -121,9 +181,14 @@ define(
           "antialiased"
       }),
       function(source) {
+        var saveButton = SaveButton({
+          onclick: code.client.save()
+        })
+
         var el = CenterColumn(
+          saveButon,
           NarrativeLink("component"),
-          Code(source)
+          code
         )
 
         var style = element.stylesheet(
@@ -177,3 +242,33 @@ define(
     return Editor
   }
 )
+
+
+// Template has a bridge concern, which is that in order to bridge routes with elements, we need to batch styles and client bindings into a request.
+
+// So maybe there are just a lot of bridges, and a bridge is a square, like
+
+//    Some                Another
+//  Template   Another    Template
+//     T • • • • T • • • • • T
+//     •         •           •
+//     -----------------------
+//     - Thing being bridged -
+//     ---- HTTP Request -----
+//     -----------------------
+//     •      •       •      •
+//     El • • El • • El • • El
+//          (some set of 
+//          dom elements)
+
+// Maybe that's why bridge feels like it keeps wanting to grow, because if there are N modules, there are actually a space of N! bridges that we could build. Not all of them will seem immediately useful to us. I suspect given the platform is accessible to enouch people, there will be an application for a bridge between every single module pair.
+
+// Maybe bridges are components. Like components talk to bridges the same way they talk to other components.
+
+
+// (And this is a super interesting point for the history talk. This will port super cleanly: ties can just become components one at a time. And the reason the port is clean is because we already spent a lot of time deciding what the boundaries around those things should be. So we're just shifting the container slightly, we're not slicing a million things in half all at once, which is what platforms do. They force you to do that because they limit themselves to 4 or 8 or 12 components.)
+
+
+
+
+

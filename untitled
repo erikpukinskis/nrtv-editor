@@ -1,0 +1,146 @@
+var component = require("component")
+
+
+
+component.define(
+  "element-route"
+  function(verb, path, handler) {
+
+    thingThatKnowsAboutAllTheRoutes[verb](path, function(request, response) {
+
+        client = {
+          show: function(element) {
+            response.send()
+          }          
+        }
+
+
+        handler(client)
+    })
+
+    client = new ClientBinder()
+    client.
+  }
+)
+
+
+component.define(
+  "important-person-texting-component",
+  function(bridge) {
+
+    var successMessage = element(".success.hidden", "Success! You da real MVP.")
+
+    ClientBinder
+
+    var textSomeone =
+      new ElementRoute(
+        bridge,
+        "post", 
+        "/text",
+        function(client) {
+          sms.send(
+            "812-320-1877",
+            "Erik, do something!"
+          )
+          client.show(successMessage).send()
+        }
+      )
+
+    var body = element([
+      element(
+        "Press the button!"
+      ),
+      successMessage,
+      element(
+        "button.do-it",
+        {
+          onclick: textSomeone.clientBinding()
+        }, 
+        "Do iiiiit"
+      )
+    ])
+
+    var homeRoute = new ElementRoute(
+      bridge,
+      "get",
+      "/",
+      function(client) {
+        client.page(body).send()
+      }
+    )
+
+  }
+)
+
+// We'll need an sms module to exist, but we're not going to actually use it, so let's just make an empty one.
+
+define("sms", function() {
+  return {
+    send: function() {
+      throw new Error("We don't actually want to be here!")
+    }
+  }
+})
+
+// Let's test to see if that works:
+
+define(
+  [
+   "important-person-texting-component"
+   , "chai", "sms", "sinon", "zombie", "sinon-chai", "html"
+  ],
+  function(Texter, chai, sms, sinon, Browser, sinonChai, html) {
+
+    var expect = chai.expect
+    chai.use(sinonChai);
+
+    sinon.stub(sms, 'send')
+
+    Browser.localhost("localhost", 3090);
+
+    var browser = new Browser()
+    browser.on("error", function(e) {
+      throw(e)
+    })
+
+
+
+    function startTexter() {
+      var instance = new Texter()
+      instance.start(3090, pressButton)
+    }
+
+    function pressButton() {
+      browser.visit("/", function() {
+
+        browser.assert.hasClass('.success', 'hidden')
+
+        browser.pressButton(
+          ".do-it",
+          instance.stop(
+            checkIfMessageIsVisible
+          )
+        )
+      })
+    }
+
+    function checkIfMessageIsVisible() {
+      console.log("\n==============\n")
+      console.log(html.prettyPrint(browser.html()))
+
+      browser.assert.hasNoClass('.success', 'hidden')
+
+      console.log("message is visible!")
+
+      expect(sms.send).to.have
+      .been.calledWith(
+        "812-320-1877",
+        "Erik, do something!" 
+      )
+
+      console.log("sms got called!")
+    }
+
+    return startTexter
+  }
+)
