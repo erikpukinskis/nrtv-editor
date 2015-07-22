@@ -1,10 +1,6 @@
-if (typeof define !== 'function') {
-  var define = require('amdefine')(
-    module)}
+var library = require("nrtv-library")(require)
 
-
-
-define(
+library.define(
   "body-text",
   ["nrtv-element"],
   function(element) {
@@ -28,7 +24,7 @@ define(
 
 
 
-define(
+library.define(
   "narrative-link",
   ["nrtv-element"],
   function(element) {
@@ -54,7 +50,7 @@ define(
 
 
 
-define(
+library.define(
   "center-column",
   ["nrtv-element", "body-text"],
   function(element, BodyText) {
@@ -72,58 +68,46 @@ define(
   }
 )
 
-define(
+library.define(
   "save-button",
-  ["nrtv-component", "nrtv-element", "nrtv-server-tie", "nrtv-bridge-tie", "nrtv-database-tie", "nrtv-element-tie"],
-  function(component, element, ServerTie, BridgeTie, DatabaseTie, ElementTie) {
+  ["nrtv-element", "nrtv-bridge-element", "nrtv-bridge-route"],
+  function(element, BridgeElement, BridgeRoute) {
 
-    var SaveButton = component(ServerTie, BridgeTie, DatabaseTie, ElementTie, function(getCode) {
-        // this func won't really be available until way late, when we are instantiated.
+    function SaveButton() {
+
+      var successMessage = new BridgeElement(".success.hidden", "Saved!")
+
+      var showSuccess = successMessage.showOnClient()
+
+      var saveRoute = new BridgeRoute(
+        "post", 
+        "/narratives/:name",
+        function(request, response) {
+          console.log("this is where we save")
+          response.json(showSuccess)
+        }
+      )
+
+      function getCode() {
+        return $("textarea").html()
       }
-    )
 
-    var server = SaveButton.server()
-    var bridge = SaveButton.bridge()
+      var button = element(
+        'button', {onclick: saveRoute.makeRequestJs()}, "Save")
 
-    var successMessage = SaveButton.element(".success.hidden", "Saved!")
-
-    var showSuccess = successMessage.showOnClient(bridge)
-    console.log()
-    var saveRoute = server.route(
-      "post", 
-      "/:name",
-      function(request, response) {
-        console.log("this is where we save")
-        response.json(showSuccess)
+      this.element = function() {
+        return button
       }
-    )
 
-    function getCode() {
-      return $("textarea").html()
     }
-
-    var Actuator = element.template(
-      'button',
-      {
-        onclick: saveRoute.makeRequest(bridge)
-
-
-
-
-        //   save.across(bridge).withArgs()
-        //   save.makeRequest(bridge, WE NEED A REF HERE TO THE DATAS)
-      },
-      "Save"
-    )
 
     return SaveButton
   }
-
 )
 
 
 
-define(
+library.define(
   "code",
   ["nrtv-element", "body-text"],
   function(element, BodyText) {
@@ -146,12 +130,6 @@ define(
       }),
       function(source) {
         this.children.push(element.raw(source))
-        this.client = {
-          save: function(bridge) {
-            bridge.bindOnClient
-            return ""
-          }
-        }
       }
     )
 
@@ -162,7 +140,7 @@ define(
 
 
 
-define(
+library.define(
   "editor-page",
   ["nrtv-element", "center-column", "code", "narrative-link", "body-text", "save-button"],
   function(element, CenterColumn, Code, NarrativeLink, BodyText, SaveButton) {
@@ -181,12 +159,9 @@ define(
           "antialiased"
       }),
       function(source) {
-        var saveButton = SaveButton({
-          onclick: code.client.save()
-        })
 
         var el = CenterColumn(
-          saveButon,
+          new SaveButton().element(),
           NarrativeLink("component"),
           code
         )
@@ -210,38 +185,70 @@ define(
 )
 
 
+module.exports = library.export(
+  "nrtv-editor",
+  ["nrtv-bridge-route"],
+  function(BridgeRoute) {
 
-define(
-  ["nrtv-component", "nrtv-element", "nrtv-bridge-tie", "nrtv-server-tie", "nrtv-element-tie", "nrtv-database-tie", "editor-page"],
-  function(component, element, BridgeTie, ServerTie, ElementTie, DatabaseTie, Page) {
+    function Editor() {
+      console.log("makin an editor")
+      new BridgeRoute(
+        "get",
+        "/edit/:name",
+        getNarrative
+      )
+    }
 
-    var Editor = component(BridgeTie, ServerTie, ElementTie, DatabaseTie)
+    function getNarrative(request, response) {
 
-    var server = Editor.server()
+      // This is just a fake database until we hook a real one up:
 
-    var bridge = Editor.bridge(server)
-
-    var narratives = Editor.database("narratives")
-
-    server.route(
-      "get",
-      "/:name",
-      function(request, response) {
-        var source = narratives.get(request.params.name,
-          function(err, narrative) {
-            if (err) {
-              narrative = {source: ""}
-            }
-            var handler = bridge.sendPage(Page(narrative.source))
-            handler(request, response)
-          }
-        )
+      var narratives = {
+        get: function(name, callback) {
+          callback(null, {source: "wolves are cool!"})
+        }
       }
-    )
+
+      narratives.get(
+        request.params.name,
+        function(err, narrative) {
+          if (err) {
+            narrative = {source: ""}
+          }
+
+          console.log("got")
+
+          sendPage(narrative.source, response)
+        }
+      )
+    }
+
+    function sendPage(code, response) {
+      console.log("Resetinng")
+      library.using(
+        [
+          library.reset(
+            "nrtv-browser-bridge"
+          ),
+          "editor-page"
+        ],
+
+        function(BrowserBridge, EditorPage) {
+
+          page = new EditorPage(code)
+
+          var bridge = BrowserBridge.collective()
+          debugger
+          bridge.sendPage(page)(null, response)
+        }
+      )
+    }
 
     return Editor
   }
 )
+
+
 
 
 // Template has a bridge concern, which is that in order to bridge routes with elements, we need to batch styles and client bindings into a request.

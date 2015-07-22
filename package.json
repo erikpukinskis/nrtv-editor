@@ -4,14 +4,12 @@
   "description": "Edit code",
   "main": "editor.js",
   "dependencies": {
-    "amdefine": "*",
-    "nrtv-component": "*",
+    "nrtv-library": "*",
     "nrtv-element": "*",
-    "nrtv-bridge-tie": "*",
-    "nrtv-server-tie": "*",
-    "nrtv-element-tie": "*",
-    "nrtv-database-tie": "*",
-    "nano": "*"
+    "nrtv-bridge-element": "*",
+    "nrtv-bridge-route": "*",
+    "nrtv-browser-bridge": "*",
+    "nrtv-database-tie": "*"
   },
   "scripts": {
     "test": "node test.js"
