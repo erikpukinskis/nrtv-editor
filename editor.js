@@ -247,35 +247,3 @@ module.exports = library.export(
     return Editor
   }
 )
-
-
-
-
-// Template has a bridge concern, which is that in order to bridge routes with elements, we need to batch styles and client bindings into a request.
-
-// So maybe there are just a lot of bridges, and a bridge is a square, like
-
-//    Some                Another
-//  Template   Another    Template
-//     T • • • • T • • • • • T
-//     •         •           •
-//     -----------------------
-//     - Thing being bridged -
-//     ---- HTTP Request -----
-//     -----------------------
-//     •      •       •      •
-//     El • • El • • El • • El
-//          (some set of 
-//          dom elements)
-
-// Maybe that's why bridge feels like it keeps wanting to grow, because if there are N modules, there are actually a space of N! bridges that we could build. Not all of them will seem immediately useful to us. I suspect given the platform is accessible to enouch people, there will be an application for a bridge between every single module pair.
-
-// Maybe bridges are components. Like components talk to bridges the same way they talk to other components.
-
-
-// (And this is a super interesting point for the history talk. This will port super cleanly: ties can just become components one at a time. And the reason the port is clean is because we already spent a lot of time deciding what the boundaries around those things should be. So we're just shifting the container slightly, we're not slicing a million things in half all at once, which is what platforms do. They force you to do that because they limit themselves to 4 or 8 or 12 components.)
-
-
-
-
-
