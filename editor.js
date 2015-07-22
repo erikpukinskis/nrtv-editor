@@ -40,8 +40,8 @@ library.define(
         "text-transform": "capitalize"
       }),
       function(name) {
-        this.innerHTML = name
-        this.attributes.href = "/"+name
+        this.children.push(name)
+        this.attributes.href = "/edit/"+name
       }
     )
 
@@ -216,15 +216,13 @@ module.exports = library.export(
             narrative = {source: ""}
           }
 
-          console.log("got")
-
           sendPage(narrative.source, response)
         }
       )
     }
 
     function sendPage(code, response) {
-      console.log("Resetinng")
+
       library.using(
         [
           library.reset(
