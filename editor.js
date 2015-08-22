@@ -70,30 +70,50 @@ library.define(
 
 library.define(
   "save-button",
-  ["nrtv-element", "nrtv-bridge-element", "nrtv-bridge-route"],
-  function(element, BridgeElement, BridgeRoute) {
+  ["nrtv-element", "nrtv-bridge-element", "nrtv-bridge-route", "nrtv-browser-bridge"],
+  function(element, BridgeElement, BridgeRoute, BrowserBridge) {
 
-    function SaveButton() {
+    function SaveButton(name) {
 
       var successMessage = new BridgeElement(".success.hidden", "Saved!")
 
       var showSuccess = successMessage.showOnClient()
 
       var saveRoute = new BridgeRoute(
-        "post", 
-        "/narratives/:name",
+        "post",
+        "/narratives",
         function(request, response) {
-          console.log("this is where we save")
+          console.log("this is where we save:", request.body)
           response.json(showSuccess)
         }
       )
 
+      var bridge = BrowserBridge.collective()
+
       function getCode() {
-        return $("textarea").html()
+        return $("textarea").val()
       }
 
-      var button = element(
-        'button', {onclick: saveRoute.makeRequestJs()}, "Save")
+      var boundCodeGetter = bridge.defineOnClient(getCode)
+
+      var save = bridge.defineOnClient(
+        [
+          boundCodeGetter,
+          saveRoute.bindOnClient()
+        ],
+        function save(getCode, makeRequest, name) {
+
+          var code = getCode()
+          makeRequest({
+            query: {name: name},
+            data: code
+          })
+        }
+      )
+
+      var button = element('button', {
+        onclick: save.withArgs(name).evalable()
+      }, "Save")
 
       this.element = function() {
         return button
@@ -158,10 +178,10 @@ library.define(
         "-webkit-font-smoothing":
           "antialiased"
       }),
-      function(source) {
+      function(name, source) {
 
         var el = CenterColumn(
-          new SaveButton().element(),
+          new SaveButton(name).element(),
           NarrativeLink("component"),
           code
         )
@@ -191,7 +211,6 @@ module.exports = library.export(
   function(BridgeRoute) {
 
     function Editor() {
-      console.log("makin an editor")
       new BridgeRoute(
         "get",
         "/edit/:name",
@@ -216,12 +235,16 @@ module.exports = library.export(
             narrative = {source: ""}
           }
 
-          sendPage(narrative.source, response)
+          sendPage(
+            request.params.name,
+            narrative.source,
+            response
+          )
         }
       )
     }
 
-    function sendPage(code, response) {
+    function sendPage(name, code, response) {
 
       library.using(
         [
@@ -233,10 +256,10 @@ module.exports = library.export(
 
         function(BrowserBridge, EditorPage) {
 
-          page = new EditorPage(code)
+          page = new EditorPage(name, code)
 
           var bridge = BrowserBridge.collective()
-          debugger
+
           bridge.sendPage(page)(null, response)
         }
       )

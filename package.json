@@ -11,13 +11,6 @@
     "nrtv-browser-bridge": "*",
     "nrtv-database-tie": "*"
   },
-  "scripts": {
-    "test": "node test.js"
-  },
-  "devDependencies": {
-    "chai": "*",
-    "requirejs": "*"
-  },
   "license": "ISC",
   "homepage": "https://github.com/erikpukinskis/nrtv-editor",
   "repository": {
