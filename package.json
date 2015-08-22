@@ -2,7 +2,6 @@
   "name": "nrtv-editor",
   "version": "0.1.0",
   "description": "Edit code",
-  "main": "editor.js",
   "dependencies": {
     "nrtv-library": "*",
     "nrtv-element": "*",
