@@ -8,7 +8,7 @@
     "nrtv-bridge-element": "*",
     "nrtv-bridge-route": "*",
     "nrtv-browser-bridge": "*",
-    "nrtv-database-tie": "*"
+    "nrtv-couch": "*"
   },
   "license": "ISC",
   "homepage": "https://github.com/erikpukinskis/nrtv-editor",

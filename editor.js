@@ -1,15 +1,16 @@
 var library = require("nrtv-library")(require)
 
-
 // The editor shows a narrative and lets you edit it.
 
 module.exports = library.export(
   "nrtv-editor",
-  ["nrtv-bridge-route"],
-  function(BridgeRoute) {
+  ["nrtv-bridge-route", "nrtv-couch"],
+  function(Route, couch) {
+
+    var narratives = couch.connect("narratives")
 
     function Editor() {
-      new BridgeRoute(
+      new Route(
         "get",
         "/edit/:name",
         getNarrative
@@ -18,31 +19,23 @@ module.exports = library.export(
 
     function getNarrative(request, response) {
 
-      // This is just a fake database until we hook a real one up:
-
-      var narratives = {
-        get: function(name, callback) {
-          callback(null, {source: "wolves are cool!"})
-        }
-      }
+      var name = request.params.name
 
       narratives.get(
-        request.params.name,
-        function(err, narrative) {
-          if (err) {
-            narrative = {source: ""}
-          }
+        name,
+        function(narrative) {
+          console.log("\n=======================\n"+JSON.stringify(narrative, null, 2)+"\n=======================")
 
           sendPage(
-            request.params.name,
-            narrative.source,
+            name,
+            narrative,
             response
           )
         }
       )
     }
 
-    function sendPage(name, code, response) {
+    function sendPage(name, narrative, response) {
 
       library.using(
         [
@@ -52,11 +45,9 @@ module.exports = library.export(
           "editor-page"
         ],
 
-        function(BrowserBridge, EditorPage) {
+        function(bridge, EditorPage) {
 
           page = new EditorPage(name, code)
-
-          var bridge = BrowserBridge.collective()
 
           bridge.sendPage(page)(null, response)
         }
@@ -75,8 +66,6 @@ library.define(
   ["nrtv-element", "code", "center-column", "narrative-link", "body-text", "./save-button"],
   function(element, Code, CenterColumn, NarrativeLink, BodyText, SaveButton) {
 
-    var code = Code("doogie howser")
-
     var Page = element.template(
       "body.page",
       element("meta", {
@@ -90,13 +79,13 @@ library.define(
       }),
       function(name, source) {
 
-        var el = CenterColumn(
-          new SaveButton(name).element(),
+        var elements = CenterColumn(
+          SaveButton(name),
           NarrativeLink("component"),
-          code
+          Code(source)
         )
 
-        var style = element.stylesheet(
+        var styles = element.stylesheet(
           Page,
           CenterColumn,
           Code,
@@ -104,8 +93,8 @@ library.define(
           NarrativeLink
         )
 
-        this.children.push(style)
-        this.children.push(el)
+        this.children.push(styles)
+        this.children.push(elements)
       }
     )
 

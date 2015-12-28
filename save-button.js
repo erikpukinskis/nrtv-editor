@@ -2,55 +2,65 @@ var library = require("nrtv-library")(require)
 
 module.exports = library.export(
   "save-button",
-  ["nrtv-element", "nrtv-bridge-element", "nrtv-bridge-route", "nrtv-browser-bridge"],
-  function(element, BridgeElement, BridgeRoute, BrowserBridge) {
+  ["nrtv-element", "nrtv-bridge-element", "nrtv-bridge-route", "nrtv-browser-bridge", "nrtv-couch"],
+  function(element, BridgeElement, BridgeRoute, bridge, couch) {
 
-    function SaveButton(name) {
+    var narratives = couch.connect("narratives")
 
-      var successMessage = new BridgeElement(".success.hidden", "Saved!")
+    // Set up an endpoint on the server that will actually write to the database eventually:
 
-      var showSuccess = successMessage.showOnClient()
+    var saveEndpoint = new BridgeRoute(
+      "post",
+      "/narratives",
+      function(request, response) {
+        var document = request.body
 
-      var saveRoute = new BridgeRoute(
-        "post",
-        "/narratives",
-        function(request, response) {
-          console.log("this is where we save:", request.body)
-          response.json(showSuccess)
-        }
-      )
+        narratives.set(
+          document.name,
+          {source: document.source},
+          function() {
+            response.json({ok: true})
+          }
+        )
+      }
+    )
 
-      var bridge = BrowserBridge.collective()
 
+    var getCode = bridge.defineFunction(
       function getCode() {
-        return $("textarea").val()
+        return document.querySelector("textarea").value  
       }
+    )
 
-      var boundCodeGetter = bridge.defineOnClient(getCode)
+    var successMessage = new BridgeElement(".success.hidden", "Saved!")
 
-      var save = bridge.defineOnClient(
+
+    // And then our button element, which calls the client function on click and shows a success message.
+
+    var SaveButton = element.template(
+      "button",
+      "Save",
+      generateButton
+    )
+
+    function generateButton(name) {
+
+      var save = bridge.defineFunction(
         [
-          boundCodeGetter,
-          saveRoute.bindOnClient()
+          getCode,
+          saveEndpoint.defineInBrowser(),
+          successMessage.defineShowInBrowser()
         ],
-        function save(getCode, makeRequest, name) {
+        function save(getCode, sendToServer, showSuccess, name) {
 
-          var code = getCode()
-          makeRequest({
-            query: {name: name},
-            data: code
-          })
+          sendToServer({
+            name: name,
+            source: getCode()
+          }, showSuccess)
         }
       )
 
-      var button = element('button', {
-        onclick: save.withArgs(name).evalable()
-      }, "Save")
-
-      this.element = function() {
-        return button
-      }
-
+      this.attributes.onclick = save.withArgs(name).evalable()
     }
 
     return SaveButton

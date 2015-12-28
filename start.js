@@ -2,8 +2,8 @@ var library = require("nrtv-library")(require)
 
 library.using(
   ["./editor", "nrtv-server"],
-  function(Editor, Server) {
+  function(Editor, server) {
     new Editor()
-    Server.collective().start(8004)
+    server.start(8004)
   }
 )
