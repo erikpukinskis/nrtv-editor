@@ -25,31 +25,30 @@ module.exports = library.export(
       }
     )
 
-
     var getCode = bridge.defineFunction(
       function getCode() {
         return document.querySelector("textarea").value  
       }
     )
 
-    var successMessage = new BridgeElement(".success.hidden", "Saved!")
-
-
     // And then our button element, which calls the client function on click and shows a success message.
 
     var SaveButton = element.template(
-      "button",
-      "Save",
       generateButton
     )
 
     function generateButton(name) {
 
+      var success = new BridgeElement(
+        ".success.hidden",
+        "Saved!"
+      )
+
       var save = bridge.defineFunction(
         [
           getCode,
           saveEndpoint.defineInBrowser(),
-          successMessage.defineShowInBrowser()
+          success.defineShowInBrowser()
         ],
         function save(getCode, sendToServer, showSuccess, name) {
 
@@ -60,7 +59,16 @@ module.exports = library.export(
         }
       )
 
-      this.attributes.onclick = save.withArgs(name).evalable()
+      var button = element(
+        "button",
+        {onclick: save.withArgs(name).evalable()},
+        "Save"
+      )
+
+      this.children.push(button)
+      this.children.push(
+        success.element()
+      )
     }
 
     return SaveButton
