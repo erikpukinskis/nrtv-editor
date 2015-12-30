@@ -7,7 +7,7 @@ module.exports = library.export(
   ["nrtv-bridge-route", "nrtv-couch"],
   function(Route, couch) {
 
-    var narratives = couch.connect("narratives")
+    var narratives = new couch.KeyStore("narratives", "name")
 
     function Editor() {
       new Route(
@@ -24,11 +24,11 @@ module.exports = library.export(
       narratives.get(
         name,
         function(narrative) {
-          console.log("\n=======================\n"+JSON.stringify(narrative, null, 2)+"\n=======================")
+          console.log("got a narrative from the db: "+JSON.stringify(narrative, null, 2))
 
           sendPage(
             name,
-            narrative,
+            narrative || {source: ""},
             response
           )
         }
@@ -47,7 +47,7 @@ module.exports = library.export(
 
         function(bridge, EditorPage) {
 
-          page = new EditorPage(name, code)
+          page = new EditorPage(name, narrative.source)
 
           bridge.sendPage(page)(null, response)
         }

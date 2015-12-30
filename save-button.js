@@ -5,7 +5,7 @@ module.exports = library.export(
   ["nrtv-element", "nrtv-bridge-element", "nrtv-bridge-route", "nrtv-browser-bridge", "nrtv-couch"],
   function(element, BridgeElement, BridgeRoute, bridge, couch) {
 
-    var narratives = couch.connect("narratives")
+    var narratives = new couch.KeyStore("narratives", "name")
 
     // Set up an endpoint on the server that will actually write to the database eventually:
 
