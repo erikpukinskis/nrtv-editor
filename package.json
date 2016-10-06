@@ -4,10 +4,10 @@
   "description": "Edit code",
   "dependencies": {
     "nrtv-library": "*",
-    "nrtv-element": "*",
+    "web-element": "*",
     "nrtv-bridge-element": "*",
     "nrtv-bridge-route": "*",
-    "nrtv-browser-bridge": "*",
+    "browser-bridge": "*",
     "nrtv-couch": "*"
   },
   "license": "ISC",

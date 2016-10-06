@@ -2,11 +2,33 @@ var library = require("nrtv-library")(require)
 
 // The editor shows a narrative and lets you edit it.
 
+
+// So this is the boilerplate I guess. That should be extracted up to the UI level?
+//
+// var library = require("nrtv-library")
+//
+// library.using(
+//   [""],
+//   function() {
+//
+//   }
+// )
+
+// Like
+// 
+
+// Module Title
+//
+// with browser-bridge as browser
+// nrtv-server as server
+// 
+// i.e...
+//
 module.exports = library.export(
   "nrtv-editor",
   ["nrtv-bridge-route", "nrtv-couch"],
   function(Route, couch) {
-
+//
     var narratives = new couch.KeyStore("narratives", "name")
 
     function Editor() {
@@ -40,7 +62,7 @@ module.exports = library.export(
       library.using(
         [
           library.reset(
-            "nrtv-browser-bridge"
+            "browser-bridge"
           ),
           "editor-page"
         ],
@@ -63,7 +85,7 @@ module.exports = library.export(
 
 library.define(
   "editor-page",
-  ["nrtv-element", "code", "center-column", "narrative-link", "body-text", "./save-button"],
+  ["web-element", "code", "center-column", "narrative-link", "body-text", "./save-button"],
   function(element, Code, CenterColumn, NarrativeLink, BodyText, SaveButton) {
 
     var Page = element.template(
@@ -85,7 +107,18 @@ library.define(
           Code(source)
         )
 
+        var body = element.style(
+          "body, input, button, p",
+          {
+            "font-family": "Helvetica",
+            "font-size": "18px",
+            "color": "#555",
+            "-webkit-font-smoothing": "antialiased"
+          }
+        )
+
         var styles = element.stylesheet(
+          body,
           Page,
           CenterColumn,
           Code,
@@ -108,7 +141,7 @@ library.define(
 
 library.define(
   "code",
-  ["nrtv-element", "body-text"],
+  ["web-element", "body-text"],
   function(element, BodyText) {
 
     return element.template(
@@ -140,7 +173,7 @@ library.define(
 
 library.define(
   "center-column",
-  ["nrtv-element", "body-text"],
+  ["web-element", "body-text"],
   function(element, BodyText) {
 
     return element.template.container(
@@ -161,7 +194,7 @@ library.define(
 
 library.define(
   "narrative-link",
-  ["nrtv-element"],
+  ["web-element"],
   function(element) {
 
     return element.template(
@@ -188,13 +221,12 @@ library.define(
 
 library.define(
   "body-text",
-  ["nrtv-element"],
+  ["web-element"],
   function(element) {
 
     return element.template.container(
       ".body-text",
       element.style({
-
         "font-size": "14pt",
         "line-height": "1.5em",
         "@media (max-width: 600px)": {
